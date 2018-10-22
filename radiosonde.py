@@ -42,7 +42,7 @@ code = str(code)
 webaddress = 'http://weather.uwyo.edu/cgi-bin/sounding?region=seasia&TYPE=TEXT%3ALIST&YEAR='+year+'&MONTH='+month+'&FROM='+day+'00&TO='+day+'00&STNM='+code
 
 page = requests.get(webaddress)
-print(page.status_code)
+print('connection successful' if page.status_code == 200 else 'connection failed')
 
 soup = mbs(page.text,'html.parser')
 #print(soup)
@@ -96,20 +96,23 @@ else :
 #		thte = np.pad(thte,(0,1),'constant',constant_values = float(dummy[9]))
 #		thtv = np.pad(thtv,(0,1),'constant',constant_values = float(dummy[10]))
 
-	
+		
+	# this is the theta coordinate for Tdew plot calcualted using Poisson's equation by substituting pressure and Tdew
+	tdthta =  (td+273)*(1000.0/p)**(float(Rdry)/float(Cp))
 	
 	plt.figure()
 	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
-	plt.plot(t,thta,label='TEMP')
-	plt.plot(td,thta,label='DWPT')
-	plt.scatter(t,thta,label='TEMP')
-	plt.scatter(td,thta,label='DWPT')
+	plt.plot(t,thta,label='TEMP',linewidth=2)
+	plt.plot(td,tdthta,label='DWPT',linewidth=2)
+	plt.scatter(t,thta,label='TEMP',s=10)
+	plt.scatter(td,tdthta,label='DWPT',s=10)
 	
+	# plotting each isobar in a loop
 	paxis = np.linspace(maxpress,minpress,int((maxpress-minpress)/pressres)+1)
 	for pvar in paxis :
-		tmpx = np.linspace(mintemp,maxtemp,10)
-		tmpy = (tmpx+273)*(1000.0/pvar)**(float(Rdry)/float(Cp))
-		plt.plot(tmpx,tmpy,'g')
+		tmpx = np.linspace(mintemp,maxtemp,2)
+		tmpy = (tmpx+273)*(1000.0/pvar)**(float(Rdry)/float(Cp)) # Poission's equation
+		plt.plot(tmpx,tmpy,'g',linewidth=0.5)
 		plt.show(block=False)
 	
 
