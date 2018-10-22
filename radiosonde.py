@@ -1,19 +1,32 @@
 year = 2018
-month = 9
-day = 19
+month = 10
+day = 22
 time = 00
 code = 43371
 
+ask = False	# set true if you want program to ask for a date to look at
 
-print('\n\n\n\t\tGive the details of the date of the data\n\n')
-date = input('\t\tdate\t:\t')
-month = input('\t\tmonth\t:\t')
-year = input('\t\tyear\t:\t')
-print('\n\n\n')
 
-mintemp = -100
-maxtemp = 40
+mintemp = -100		# C
+maxtemp = 40		# C
+minthta = 280		# K
+maxthta = 1000
 
+# pressure axis range
+minpress = 100 		# hPa
+maxpress = 1050		# hPa
+pressres = 50 		# resolution in p axis in hPa
+
+Rdry = 287
+Cp = 1004
+
+
+if ask :
+	print('\n\n\n\t\tGive the details of the date of the data\n\n')
+	date = input('\t\tdate\t:\t')
+	month = input('\t\tmonth\t:\t')
+	year = input('\t\tyear\t:\t')
+	print('\n\n\n')
 
 from bs4 import BeautifulSoup as mbs
 import requests
@@ -80,30 +93,29 @@ else :
 		d    = np.pad(d,(0,1),'constant',constant_values = float(dummy[6]))
 		v    = np.pad(v,(0,1),'constant',constant_values = float(dummy[7]))
 		thta = np.pad(thta,(0,1),'constant',constant_values = float(dummy[8]))
-		thte = np.pad(thte,(0,1),'constant',constant_values = float(dummy[9]))
-		thtv = np.pad(thtv,(0,1),'constant',constant_values = float(dummy[10]))
+#		thte = np.pad(thte,(0,1),'constant',constant_values = float(dummy[9]))
+#		thtv = np.pad(thtv,(0,1),'constant',constant_values = float(dummy[10]))
 
-
+	
+	
 	plt.figure()
-	plt.axis([mintemp,maxtemp,1000,np.min(p)])
-	plt.plot(t,p,label='TEMP')
-	plt.plot(td,p,label='DWPT')
-	plt.yscale('log')
-	plt.xlabel('Temperature in C')
-	plt.ylabel('Log Pressure in hPa')
-	plt.legend()
-	plt.grid(True)
-	plt.title('Skew T log P')
-
-
-	plt.figure()
-	plt.axis([mintemp,maxtemp,280,np.max(thta)])
+	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
 	plt.plot(t,thta,label='TEMP')
 	plt.plot(td,thta,label='DWPT')
+	plt.scatter(t,thta,label='TEMP')
+	plt.scatter(td,thta,label='DWPT')
+	
+	paxis = np.linspace(maxpress,minpress,int((maxpress-minpress)/pressres)+1)
+	for pvar in paxis :
+		tmpx = np.linspace(mintemp,maxtemp,10)
+		tmpy = (tmpx+273)*(1000.0/pvar)**(float(Rdry)/float(Cp))
+		plt.plot(tmpx,tmpy,'g')
+		plt.show(block=False)
+	
+
 	plt.xlabel('Temperature in C')
 	plt.ylabel('Potentail temperature in K')
-	plt.legend()
 	plt.grid(True)
 	plt.title('Tephigram')
-
+	plt.legend()
 	plt.show()
