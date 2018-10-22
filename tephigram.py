@@ -1,3 +1,6 @@
+# This code takes the Radiosonde data from the website http://weather.uwyo.edu/upperair/sounding.html
+# For any issue contact kvng vikram 
+
 year = 2018
 month = 10
 day = 22
