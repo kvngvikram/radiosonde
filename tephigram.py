@@ -3,7 +3,7 @@
 
 year = 2018
 month = 10
-day = 22
+day = 31
 time = 00
 code = 43371
 
@@ -18,7 +18,7 @@ maxthta = 1000
 # pressure axis range
 minpress = 100 		# hPa
 maxpress = 1050		# hPa
-pressres = 50 		# resolution in p axis in hPa
+pressres = 50		# resolution in p axis in hPa
 
 Rdry = 287
 Cp = 1004
@@ -99,9 +99,16 @@ else :
 #		thte = np.pad(thte,(0,1),'constant',constant_values = float(dummy[9]))
 #		thtv = np.pad(thtv,(0,1),'constant',constant_values = float(dummy[10]))
 
+
+
+	def PT_to_ThetaT(P,T):		# Units : hPa,C to K,C
+		return (T+273)*(1000.0/P)**(float(Rdry)/float(Cp)) , T 
+
+	def ThetaT_to_PT(Theta,T):	# Units : K,C to hPa,C
+		return 1000.0*((T+273)/Theta)**(float(Cp)/float(Rdry)) , T	# from Poisson's equation
 		
 	# this is the theta coordinate for Tdew plot calcualted using Poisson's equation by substituting pressure and Tdew
-	tdthta =  (td+273)*(1000.0/p)**(float(Rdry)/float(Cp))
+	tdthta,td =  PT_to_ThetaT(p,td)
 	
 	plt.figure()
 	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
@@ -114,7 +121,7 @@ else :
 	paxis = np.linspace(maxpress,minpress,int((maxpress-minpress)/pressres)+1)
 	for pvar in paxis :
 		tmpx = np.linspace(mintemp,maxtemp,2)
-		tmpy = (tmpx+273)*(1000.0/pvar)**(float(Rdry)/float(Cp)) # Poission's equation
+		tmpy,tmpx = PT_to_ThetaT(pvar,tmpx)
 		plt.plot(tmpx,tmpy,'g',linewidth=0.5)
 		plt.show(block=False)
 	
