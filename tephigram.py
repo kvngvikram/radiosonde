@@ -107,15 +107,15 @@ else :
 	def ThetaT_to_PT(Theta,T):	# Units : K,C to hPa,C
 		return 1000.0*((T+273)/Theta)**(float(Cp)/float(Rdry)) , T	# from Poisson's equation
 		
-	# this is the theta coordinate for Tdew plot calcualted using Poisson's equation by substituting pressure and Tdew
-	tdthta,td =  PT_to_ThetaT(p,td)
-	
+	TdTheta,td =  PT_to_ThetaT(p,td)
+	TTheta , t =  PT_to_ThetaT(p, t)
+
 	plt.figure()
 	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
-	plt.plot(t,thta,label='TEMP',linewidth=2)
-	plt.plot(td,tdthta,label='DWPT',linewidth=2)
-	plt.scatter(t,thta,label='TEMP',s=10)
-	plt.scatter(td,tdthta,label='DWPT',s=10)
+	plt.plot(t,TTheta,label='TEMP',linewidth=2)
+	plt.plot(td,TdTheta,label='DWPT',linewidth=2)
+	plt.scatter(t,TTheta,label='TEMP',s=10)
+	plt.scatter(td,TdTheta,label='DWPT',s=10)
 	
 	# plotting each isobar in a loop
 	paxis = np.linspace(maxpress,minpress,int((maxpress-minpress)/pressres)+1)
