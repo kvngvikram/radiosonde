@@ -2,8 +2,8 @@
 # For any issue contact kvng vikram 
 
 year = 2018
-month = 10
-day = 31
+month = 9
+day = 27
 time = 00
 code = 43371
 
@@ -20,8 +20,18 @@ minpress = 100 		# hPa
 maxpress = 1050		# hPa
 pressres = 50		# resolution in p axis in hPa
 
-Rdry = 287
-Cp = 1004
+# For constant mixing ration lines in g/kg
+waxis = [0.01,0.05,0.1,0.2,0.35,0.5,0.75,1,1.5,2,3,4,5.5,6.5,8,10,12,16,20,24,28,32,40,48,56,64,72]
+
+# constants 
+Rdry = 287.05		# J/(kg K)
+Rvap = 461.52		# J/(kg K)
+L = 2.27*10**6		# J/kg	
+Ttp = 0.01		# C
+Etp = 6.11657		# hPa
+Cp = 1004.0
+CK = 273.0		# centrigrade to kelvin conversion offset
+Epsilon = Rdry/Rvap 
 
 
 if ask :
@@ -45,7 +55,7 @@ code = str(code)
 webaddress = 'http://weather.uwyo.edu/cgi-bin/sounding?region=seasia&TYPE=TEXT%3ALIST&YEAR='+year+'&MONTH='+month+'&FROM='+day+'00&TO='+day+'00&STNM='+code
 
 page = requests.get(webaddress)
-print('connection successful' if page.status_code == 200 else 'connection failed')
+#print('connection successful' if page.status_code == 200 else 'connection failed')
 
 soup = mbs(page.text,'html.parser')
 #print(soup)
@@ -102,20 +112,16 @@ else :
 
 
 	def PT_to_ThetaT(P,T):		# Units : hPa,C to K,C
-		return (T+273)*(1000.0/P)**(float(Rdry)/float(Cp)) , T 
+		return (T+CK)*(1000.0/P)**(Rdry/Cp) , T 
 
 	def ThetaT_to_PT(Theta,T):	# Units : K,C to hPa,C
-		return 1000.0*((T+273)/Theta)**(float(Cp)/float(Rdry)) , T	# from Poisson's equation
+		return 1000.0*((T+CK)/Theta)**(Cp/Rdry) , T	# from Poisson's equation
 		
-	TdTheta,td =  PT_to_ThetaT(p,td)
-	TTheta , t =  PT_to_ThetaT(p, t)
+	def WT_to_PT(W,T):		# Units : g/kg,C to hPa,C
+		return ((Epsilon+(W/1000.0))/(W/1000.0))*Etp*np.exp((1/(Ttp+CK)-1/(T+CK))*L/Rvap) , T 
 
 	plt.figure()
 	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
-	plt.plot(t,TTheta,label='TEMP',linewidth=2)
-	plt.plot(td,TdTheta,label='DWPT',linewidth=2)
-	plt.scatter(t,TTheta,label='TEMP',s=10)
-	plt.scatter(td,TdTheta,label='DWPT',s=10)
 	
 	# plotting each isobar in a loop
 	paxis = np.linspace(maxpress,minpress,int((maxpress-minpress)/pressres)+1)
@@ -123,12 +129,25 @@ else :
 		tmpx = np.linspace(mintemp,maxtemp,2)
 		tmpy,tmpx = PT_to_ThetaT(pvar,tmpx)
 		plt.plot(tmpx,tmpy,'g',linewidth=0.5)
-		plt.show(block=False)
 	
-
+	for wvar in waxis:
+		tmpx = np.linspace(mintemp,maxtemp,50)
+		tmpp , tmpx = WT_to_PT(wvar,tmpx)
+		tmpy , tmpx = PT_to_ThetaT(tmpp,tmpx)
+		plt.plot(tmpx,tmpy,'r',linewidth=0.5)
+	
 	plt.xlabel('Temperature in C')
 	plt.ylabel('Potentail temperature in K')
 	plt.grid(True)
 	plt.title('Tephigram')
-	plt.legend()
+#	plt.legend()
+	
+	TdTheta,td =  PT_to_ThetaT(p,td)
+	TTheta , t =  PT_to_ThetaT(p, t)
+	
+	plt.plot(t,TTheta,label='TEMP',linewidth=2)
+	plt.plot(td,TdTheta,label='DWPT',linewidth=2)
+	plt.scatter(t,TTheta,label='TEMP',s=10)
+	plt.scatter(td,TdTheta,label='DWPT',s=10)
+	
 	plt.show()
