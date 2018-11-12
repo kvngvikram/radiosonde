@@ -118,7 +118,7 @@ else :
 		return 1000.0*((T+CK)/Theta)**(Cp/Rdry) , T	# from Poisson's equation
 		
 	def WT_to_PT(W,T):		# Units : g/kg,C to hPa,C
-		return ((Epsilon+(W/1000.0))/(W/1000.0))*Etp*np.exp((1/(Ttp+CK)-1/(T+CK))*L/Rvap) , T 
+		return ((Epsilon+(W/1000.0))/(W/1000.0))*Etp*np.exp((1/(Ttp+CK)-1/(T+CK))*L/Rvap) , T 		# from Clausius-Clapeyron Equation
 
 	plt.figure()
 	plt.axis([mintemp,maxtemp,minthta,np.max(thta)])
